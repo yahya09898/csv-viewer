@@ -85,29 +85,31 @@ export default function DataPortal() {
 
   const totalPages = Math.ceil(filtered.length / pageSize) || 1;
 
-  const darkBg = 'bg-gray-900';
-  const darkCard = 'bg-gray-800';
-  const darkTableHeader = 'bg-gray-700';
-  const darkTableRowEven = 'bg-gray-800';
-  const darkTableRowOdd = 'bg-gray-700';
-  const darkText = 'text-gray-100';
-  const darkBorder = 'border-gray-600';
+  const bgColor = darkMode ? 'bg-black' : 'bg-white';
+  const textColor = darkMode ? 'text-white' : 'text-black';
+  const cardBg = darkMode ? 'bg-gray-900' : 'bg-gray-50';
+  const borderColor = darkMode ? 'border-gray-700' : 'border-gray-200';
+  const headerBg = darkMode ? 'bg-gray-800' : 'bg-gray-100';
+  const rowEvenBg = darkMode ? 'bg-gray-900' : 'bg-white';
+  const rowOddBg = darkMode ? 'bg-gray-800' : 'bg-gray-50';
 
   return (
-    <div className={`${darkMode ? darkBg : 'bg-white'} ${darkMode ? darkText : 'text-black'} p-6 max-w-7xl mx-auto min-h-screen`}>
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">📊 Advanced Data Portal</h1>
+    <div className={`${bgColor} ${textColor} p-6 max-w-7xl mx-auto min-h-screen transition-colors duration-300`}> 
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-extrabold tracking-tight">📊 Advanced Data Portal</h1>
         <Button variant="outline" onClick={() => setDarkMode(!darkMode)}>
           {darkMode ? 'Light Mode' : 'Dark Mode'}
         </Button>
       </div>
 
-      <Card className={`${darkMode ? darkCard : ''} mb-4`}>
-        <CardContent className="flex flex-col gap-4 p-4">
-          <Input type="file" multiple accept=".csv,.xlsx" onChange={(e) => [...e.target.files].forEach(loadFile)} />
-          <div className="flex gap-2 flex-wrap">
+      <Card className={`${cardBg} p-4 mb-6 shadow-lg rounded-xl transition-colors duration-300`}> 
+        <CardContent className="flex flex-col gap-4">
+          <Input type="file" multiple accept=".csv,.xlsx" onChange={(e) => [...e.target.files].forEach(loadFile)} className="mb-2" />
+
+          <div className="flex flex-wrap gap-2 mb-2">
             {files.map((f) => (
               <Button key={f.name} variant={activeFile?.name === f.name ? "default" : "outline"}
+                className="transition-colors duration-200"
                 onClick={() => {
                   setActiveFile(f);
                   setData(f.data);
@@ -119,56 +121,42 @@ export default function DataPortal() {
             ))}
           </div>
 
-          <Input placeholder="Global filter..." value={filter} onChange={(e) => setFilter(e.target.value)} />
+          <Input placeholder="Search..." value={filter} onChange={(e) => setFilter(e.target.value)} className="mb-2" />
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
             <Input placeholder="New column name" value={newColName} onChange={(e) => setNewColName(e.target.value)} />
             <Input placeholder="Logic (ex: row.Price * row.Qty)" value={newColLogic} onChange={(e) => setNewColLogic(e.target.value)} />
-            <Button onClick={applyNewColumn}>Add Column</Button>
+            <Button onClick={applyNewColumn} className="w-full md:w-auto">Add Column</Button>
           </div>
 
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-4 flex-wrap">
-              <Button size="sm" variant="outline" onClick={() => setVisibleCols([])}>Hide All</Button>
-              <Button size="sm" variant="outline" onClick={() => setVisibleCols(columns)}>Show All</Button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {columns.map((c) => (
-                <label key={c} className="text-sm flex items-center gap-1">
-                  <input
-                    type="checkbox"
-                    checked={visibleCols.includes(c)}
-                    onChange={() =>
-                      setVisibleCols((prev) =>
-                        prev.includes(c)
-                          ? prev.filter((x) => x !== c)
-                          : [...prev, c]
-                      )
-                    }
-                  />
-                  {c}
-                </label>
-              ))}
-            </div>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={() => setVisibleCols([])}>Hide All</Button>
+            <Button size="sm" variant="outline" onClick={() => setVisibleCols(columns)}>Show All</Button>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mt-2">
+            {columns.map((c) => (
+              <label key={c} className="flex items-center gap-1 text-sm">
+                <input type="checkbox" checked={visibleCols.includes(c)}
+                  onChange={() => setVisibleCols(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])} />
+                {c}
+              </label>
+            ))}
           </div>
         </CardContent>
       </Card>
 
-      <div className="overflow-auto rounded-xl shadow">
-        <table className={`min-w-full border ${darkMode ? darkBorder : ''}`}>
-          <thead className={`${darkMode ? darkTableHeader : 'bg-gray-100'}`}>
+      <div className="overflow-auto rounded-xl shadow mb-4">
+        <table className={`min-w-full border ${borderColor} transition-colors duration-300`}>
+          <thead className={`${headerBg} transition-colors duration-300`}> 
             <tr>
-              {visibleCols.map((c) => (
-                <th key={c} className="px-3 py-2 border text-left text-sm">{c}</th>
-              ))}
+              {visibleCols.map((c) => <th key={c} className="px-4 py-2 border text-left text-sm">{c}</th>)}
             </tr>
           </thead>
           <tbody>
             {paginated.map((row, i) => (
-              <tr key={i} className={`${darkMode ? (i % 2 === 0 ? darkTableRowEven : darkTableRowOdd) : (i % 2 === 0 ? 'bg-white' : 'bg-gray-50')}`}>
-                {visibleCols.map((c) => (
-                  <td key={c} className="px-3 py-2 border text-sm">{row[c]}</td>
-                ))}
+              <tr key={i} className={i % 2 === 0 ? rowEvenBg : rowOddBg}>
+                {visibleCols.map((c) => <td key={c} className="px-4 py-2 border text-sm">{row[c]}</td>)}
               </tr>
             ))}
           </tbody>
@@ -176,7 +164,7 @@ export default function DataPortal() {
       </div>
 
       <div className="flex items-center justify-between mt-4">
-        <div className="text-sm">Page {page} of {totalPages}</div>
+        <div className="text-sm font-medium">Page {page} of {totalPages}</div>
         <div className="flex gap-2">
           <Button disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</Button>
           <Button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Next</Button>
